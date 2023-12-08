@@ -48,19 +48,19 @@
             display: none;
         }
 
-        #beep {
+        #green {
             background-color: #0d431d;
         }
 
-        #coin {
+        #red {
             background-color: #c05245;
         }
 
-        #jingle {
+        #yellow {
             background-color: #6e380d;
         }
 
-        #shot {
+        #blue {
             background-color: #10506a;
         }
     </style>
@@ -116,14 +116,14 @@
 
         const buttonsRow1 = document.createElement('div');
         buttonsRow1.classList.add('buttons-row-1', 'flex', 'gap-8');
-        ['beep', 'coin'].forEach(buttonId => {
+        ['green', 'red'].forEach(buttonId => {
             const button = createButton(buttonId);
             buttonsRow1.appendChild(button);
         });
 
         const buttonsRow2 = document.createElement('div');
         buttonsRow2.classList.add('buttons-row-2', 'flex', 'gap-8');
-        ['jingle', 'shot'].forEach(buttonId => {
+        ['yellow', 'blue'].forEach(buttonId => {
             const button = createButton(buttonId);
             buttonsRow2.appendChild(button);
         });
@@ -140,7 +140,7 @@
     }
 
     function getButtonIndex(buttonId) {
-        const buttonIndexMap = { 'beep': 0, 'coin': 1, 'jingle': 2, 'shot': 3 };
+        const buttonIndexMap = { 'green': 0, 'red': 1, 'yellow': 2, 'blue': 3 };
         return buttonIndexMap[buttonId];
     }
 
@@ -201,7 +201,7 @@
     }
 
     function getButtonId(buttonIndex) {
-        return ['beep', 'coin', 'jingle', 'shot'][buttonIndex];
+        return ['green', 'red', 'yellow', 'blue'][buttonIndex];
     }
 
     function getAudioUrl(buttonIndex) {
@@ -221,6 +221,16 @@
         sequence = [];
         userSequence = [];
         level = 0;
+
+        const username = document.querySelector('.user-text').textContent.replace('User: ', '');
+        const score = document.querySelector('.level-text').textContent.replace('Level: ', '');
+
+        const existingScores = JSON.parse(localStorage.getItem('scores')) || [];
+
+        existingScores.push({ username, score });
+
+        localStorage.setItem('scores', JSON.stringify(existingScores));
+
         document.querySelector('.level-text').innerHTML = 'Level: 0';
     }
 
