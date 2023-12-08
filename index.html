@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap" rel="stylesheet">
+    <title>Music Memory</title>
+    <style>
+        * {
+            color: white;
+            font-family: 'Pixelify Sans', sans-serif;
+        }
+
+        button {
+            height: 200px;
+            width: 200px;
+            border-radius: 20px;
+        }
+
+        .game-container {
+            background-color: white;
+            border-radius: 20px;
+        }
+
+        .title-text {
+            font-size: 96px;
+            color: white;
+        }
+
+        .title-text:hover {
+            color: green;
+        }
+
+        p {
+            font-size: 24px;
+            color: green;
+        }
+
+        .highlighted {
+            box-shadow: 0 0 20px 5px green;
+        }
+
+        .game-container {
+            display: none;
+        }
+
+        #beep {
+            background-color: #0d431d;
+        }
+
+        #coin {
+            background-color: #c05245;
+        }
+
+        #jingle {
+            background-color: #6e380d;
+        }
+
+        #shot {
+            background-color: #10506a;
+        }
+    </style>
+</head>
+
+<body class="bg-black h-screen">
+    <div class="main-container flex flex-col items-center h-screen">
+        <div class="title-container">
+            <span id="startText" class="title-text my-24 cursor-pointer"> Start! 😸 </span>
+        </div>
+        <div class="game-container flex flex-col gap-8 p-8">
+            <!-- Buttons will be dynamically loaded here -->
+        </div>
+
+        <div class="user-info-div absolute top-10 right-10">
+            <p class="user-text"> User: Default </p>
+            <p class="level-text"> Level: 0 </p>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('startText').addEventListener('click', startGame);
+    });
+
+    let buttonsCreated = false;
+
+    function startGame() {
+        var username = prompt('Please enter your username:');
+
+        if (username !== null && username.trim() !== '') {
+            // Show the game container
+            document.querySelector('.game-container').style.display = 'flex';
+
+            if (!buttonsCreated) {
+                loadButtons();
+                buttonsCreated = true;
+            }
+
+            let usertext = document.querySelector('.user-text');
+            usertext.innerHTML = 'User: ' + username;
+            playSequence();
+        } else {
+            startGame();
+        }
+    }
+
+    function loadButtons() {
+        const gameContainer = document.querySelector('.game-container');
+
+        const buttonsRow1 = document.createElement('div');
+        buttonsRow1.classList.add('buttons-row-1', 'flex', 'gap-8');
+        ['beep', 'coin'].forEach(buttonId => {
+            const button = createButton(buttonId);
+            buttonsRow1.appendChild(button);
+        });
+
+        const buttonsRow2 = document.createElement('div');
+        buttonsRow2.classList.add('buttons-row-2', 'flex', 'gap-8');
+        ['jingle', 'shot'].forEach(buttonId => {
+            const button = createButton(buttonId);
+            buttonsRow2.appendChild(button);
+        });
+
+        gameContainer.appendChild(buttonsRow1);
+        gameContainer.appendChild(buttonsRow2);
+    }
+
+    function createButton(buttonId) {
+        const button = document.createElement('button');
+        button.id = buttonId;
+        button.onclick = () => playAndCheck('music/' + buttonId + '.mp3', getButtonIndex(buttonId));
+        return button;
+    }
+
+    function getButtonIndex(buttonId) {
+        const buttonIndexMap = { 'beep': 0, 'coin': 1, 'jingle': 2, 'shot': 3 };
+        return buttonIndexMap[buttonId];
+    }
+
+    let sequence = [];
+    let userSequence = [];
+    let level = 0;
+
+    function playAndCheck(url, buttonIndex) {
+        playAudio(url);
+        userSequence.push(buttonIndex);
+
+        if (checkUserInput()) {
+            if (userSequence.length === sequence.length) {
+                setTimeout(() => {
+                    level++;
+                    document.querySelector('.level-text').innerHTML = 'Level: ' + level;
+                    playSequence();
+                }, 1000);
+            }
+        } else {
+            alert('Game over! Your score is: ' + level);
+            resetGame();
+        }
+    }
+
+    function playSequence() {
+        userSequence = [];
+        addToSequence();
+        displaySequence();
+    }
+
+    function addToSequence() {
+        sequence.push(Math.floor(Math.random() * 4));
+    }
+
+    function displaySequence() {
+        let delay = 750;
+
+        sequence.forEach((buttonIndex, index) => {
+            setTimeout(() => {
+                highlightButton(buttonIndex);
+                setTimeout(() => {
+                    unhighlightButton(buttonIndex);
+                }, delay / 2);
+            }, index * delay);
+        });
+    }
+
+    function highlightButton(buttonIndex) {
+        let button = document.getElementById(getButtonId(buttonIndex));
+        button.classList.add('highlighted');
+        playAudio(getAudioUrl(buttonIndex));
+    }
+
+    function unhighlightButton(buttonIndex) {
+        let button = document.getElementById(getButtonId(buttonIndex));
+        button.classList.remove('highlighted');
+    }
+
+    function getButtonId(buttonIndex) {
+        return ['beep', 'coin', 'jingle', 'shot'][buttonIndex];
+    }
+
+    function getAudioUrl(buttonIndex) {
+        return 'music/' + getButtonId(buttonIndex) + '.mp3';
+    }
+
+    function checkUserInput() {
+        for (let i = 0; i < userSequence.length; i++) {
+            if (userSequence[i] !== sequence[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function resetGame() {
+        sequence = [];
+        userSequence = [];
+        level = 0;
+        document.querySelector('.level-text').innerHTML = 'Level: 0';
+    }
+
+    function playAudio(url) {
+        new Audio(url).play();
+    }
+</script>
